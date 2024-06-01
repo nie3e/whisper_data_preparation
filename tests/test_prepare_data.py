@@ -15,8 +15,8 @@ def sample_data() -> list[dict]:
     return [
         {
             "text": segment["text"],
-            "start": segment["start"],
-            "end": segment["end"]
+            "start": int(segment["start"] * 1000),
+            "end": int(segment["end"] * 1000)
         }
         for segment in data["segments"]
     ]

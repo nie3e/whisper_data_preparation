@@ -9,6 +9,7 @@ class Processor:
         result: list[dict] = []
         segments = get_audio_segments(data)
         samplerate = 16000
+        sr_sec = samplerate/1000
         audio, _ = librosa.load(filename, sr=samplerate, dtype=np.float32)
 
         i = 0
@@ -20,11 +21,11 @@ class Processor:
                 e = tmp_ws.segment_end
                 d = e - s
                 if d < tmp_ws.limit:
-                    r = segments[i].start_f - e
+                    r = segments[i].start - e
                     max_d = tmp_ws.limit - d
                     e = e + max(0.0, min(max_d, r - 0.02))
-                    assert e <= segments[i].start_f
-                arr = audio[int(s * samplerate):int(e * samplerate)]
+                    assert e <= segments[i].start
+                arr = audio[int(s * sr_sec):int(e * sr_sec)]
                 result.append(
                     {"text": tmp_ws.str_shifted(), "audio": arr}
                 )
@@ -35,8 +36,8 @@ class Processor:
                 e = tmp_ws.segment_end
                 d = e - s
                 max_d = tmp_ws.limit - d
-                e = min(e + max_d, len(audio)/samplerate)
-                arr = audio[int(s * samplerate):int(e * samplerate)]
+                e = min(e + max_d, len(audio)/sr_sec)
+                arr = audio[int(s * sr_sec):int(e * sr_sec)]
                 result.append(
                     {"text": tmp_ws.str_shifted(), "audio": arr}
                 )

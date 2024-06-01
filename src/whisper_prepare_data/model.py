@@ -6,60 +6,62 @@ from typing import Self, Optional
 @dataclass
 class AudioSegment:
     text: str
-    start: str
-    end: str
-    start_f: Optional[float] = None
-    end_f: Optional[float] = None
+    start: int
+    end: int
+    start_str: Optional[str] = None
+    end_str: Optional[str] = None
 
     def __post_init__(self):
-        self.start_f = float(self.start)
-        self.end_f = float(self.end)
+        self.start_str = f"{(self.start / 1000.0):.2f}"
+        self.end_str = f"{(self.end / 1000.0):.2f}"
 
     @classmethod
     def from_dict(cls, data: dict) -> Self:
         text = data["text"]
-        start = round_partial_floor(float(data["start"]), 0.02)
-        end = round_partial_ceil(float(data["end"]), 0.02)
+        start_i = int(data["start"])
+        end_i = int(data["end"])
+        start_i -= start_i % 10
+        end_i -= end_i % 10
+        start = round_partial_floor_int(start_i, 20)
+        end = round_partial_ceil_int(end_i, 20)
 
-        return AudioSegment(
-            text=text, start=f"{start:.2f}", end=f"{end:.2f}"
-        )
+        return AudioSegment(text=text, start=start, end=end)
 
     def __str__(self):
-        return f"<|{self.start}|>{self.text}<|{self.end}|>"
+        return f"<|{self.start_str}|>{self.text}<|{self.end_str}|>"
 
-    def str_shifted(self, duration: float) -> str:
-        start = self.start_f - duration
-        end = self.end_f - duration
-        return f"<|{start:.2f}|>{self.text}<|{end:.2f}|>"
+    def str_shifted(self, duration: int) -> str:
+        start = self.start - duration
+        end = self.end - duration
+        return f"<|{(start/1000.0):.2f}|>{self.text}<|{(end/1000.0):.2f}|>"
 
 
 class WhisperSegment:
     def __init__(self):
         self.segments: list[AudioSegment] = []
-        self.limit = 30.0
+        self.limit = 30000
 
     @property
     def segment_start(self) -> Optional[float]:
         if not self.segments:
             return None
-        return self.segments[0].start_f
+        return self.segments[0].start
 
     @property
     def segment_end(self) -> Optional[float]:
         if not self.segments:
             return None
-        return self.segments[-1].end_f
+        return self.segments[-1].end
 
     def __str__(self):
         return " ".join([str(s) for s in self.segments])
 
     def str_shifted(self):
-        d = self.segments[0].start_f
+        d = self.segments[0].start
         return " ".join([s.str_shifted(d) for s in self.segments])
 
     def add_segment(self, segment: AudioSegment) -> bool:
-        if self.segments and segment.end_f - self.segment_start > self.limit:
+        if self.segments and segment.end - self.segment_start > self.limit:
             return False
         self.segments.append(segment)
         return True
@@ -71,6 +73,14 @@ def round_partial_ceil(value: float, resolution: float) -> float:
 
 def round_partial_floor(value: float, resolution: float) -> float:
     return floor(round(value, 2) / resolution) * resolution
+
+
+def round_partial_ceil_int(value: int, resolution: int) -> int:
+    return int(ceil(value / resolution)) * resolution
+
+
+def round_partial_floor_int(value: int, resolution: int) -> int:
+    return int(floor(value / resolution)) * resolution
 
 
 def get_audio_segments(data: list[dict]) -> list[AudioSegment]:
