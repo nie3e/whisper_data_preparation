@@ -3,6 +3,8 @@ import os
 import librosa
 import soundfile as sf
 import numpy as np
+from datasets import Dataset
+import pandas as pd
 
 from whisper_prepare_data.model import (get_audio_segments, WhisperSegment)
 
@@ -65,3 +67,11 @@ def save_segments_as_files(
                 encoding="utf-8"
         ) as f:
             f.write(segment["text"])
+
+
+def save_as_dataset(
+        segment_list: list[dict], dataset_name: str, save_dir: str
+) -> None:
+    os.makedirs(f"{save_dir}", exist_ok=True)
+    dataset = Dataset.from_pandas(pd.DataFrame(data=segment_list))
+    dataset.save_to_disk(f"{save_dir}/{dataset_name}")

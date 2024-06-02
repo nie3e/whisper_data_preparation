@@ -3,8 +3,10 @@ import os
 import pytest
 import librosa
 import numpy as np
+from datasets import load_from_disk
 
-from whisper_prepare_data import Processor, save_segments_as_files
+from whisper_prepare_data import (Processor, save_segments_as_files,
+                                  save_as_dataset)
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -61,3 +63,17 @@ def test_save_segments_as_files(sample_data, tmp_path):
 
         assert len(audio) == len(segment["audio"])
         assert text == segment["text"]
+
+
+def test_save_as_dataset(sample_data, tmp_path):
+    dataset_name = "test_dataset"
+    filename = f"{dir_path}/resources/hr.mp3"
+    processor = Processor()
+    result = processor(sample_data, filename)
+
+    save_as_dataset(result, dataset_name, str(tmp_path))
+
+    dataset = load_from_disk(str(tmp_path/dataset_name))
+
+    assert dataset
+    assert len(dataset) == 10
