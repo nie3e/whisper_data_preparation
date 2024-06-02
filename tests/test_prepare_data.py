@@ -1,8 +1,10 @@
 import json
 import os
 import pytest
+import librosa
+import numpy as np
 
-from whisper_prepare_data import Processor
+from whisper_prepare_data import Processor, save_segments_as_files
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -35,3 +37,27 @@ class TestProcessor:
             assert len(r["audio"]) <= 480000
 
         assert "Ja p... dole!" in result[-1]["text"]
+
+
+def test_save_segments_as_files(sample_data, tmp_path):
+    filename = f"{dir_path}/resources/hr.mp3"
+    processor = Processor()
+
+    result = processor(sample_data, filename)
+
+    save_segments_as_files(result, "test_segment", str(tmp_path))
+
+    assert len(os.listdir(tmp_path/"test_segment")) == 20
+
+    for i, segment in enumerate(result):
+        segment_path = f"{tmp_path}/test_segment/segment_{i:03d}"
+        audio, _ = librosa.load(
+            f"{segment_path}.wav",
+            sr=16000,
+            dtype=np.float32
+        )
+        with open(f"{segment_path}.txt", encoding="utf-8") as f:
+            text = f.read()
+
+        assert len(audio) == len(segment["audio"])
+        assert text == segment["text"]

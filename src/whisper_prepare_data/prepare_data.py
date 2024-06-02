@@ -1,4 +1,7 @@
+import os
+
 import librosa
+import soundfile as sf
 import numpy as np
 
 from whisper_prepare_data.model import (get_audio_segments, WhisperSegment)
@@ -44,3 +47,21 @@ class Processor:
             i += 1
 
         return result
+
+
+def save_segments_as_files(
+        segments: list[dict], segment_name: str, save_dir: str
+) -> None:
+    os.makedirs(f"{save_dir}/{segment_name}", exist_ok=True)
+    for i, segment in enumerate(segments):
+        sf.write(
+            file=f"{save_dir}/{segment_name}/segment_{i:03d}.wav",
+            data=segment["audio"],
+            samplerate=16000,
+            subtype="PCM_24"
+        )
+        with open(
+                f"{save_dir}/{segment_name}/segment_{i:03d}.txt", "w",
+                encoding="utf-8"
+        ) as f:
+            f.write(segment["text"])
