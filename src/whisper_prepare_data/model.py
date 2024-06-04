@@ -23,7 +23,7 @@ class AudioSegment:
         start_i -= start_i % 10
         end_i -= end_i % 10
         start = round_partial_floor_int(start_i, 20)
-        end = round_partial_ceil_int(end_i, 20)
+        end = round_partial_floor_int(end_i, 20)
 
         return AudioSegment(text=text, start=start, end=end)
 

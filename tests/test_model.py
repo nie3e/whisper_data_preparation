@@ -30,7 +30,7 @@ class TestAudioSegment:
 
         expected = [
             model.AudioSegment(text="test", start=220, end=340),
-            model.AudioSegment(text="test 2", start=15320, end=17360)
+            model.AudioSegment(text="test 2", start=15320, end=17340)
         ]
 
         assert segments == expected
