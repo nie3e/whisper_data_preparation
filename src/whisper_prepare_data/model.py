@@ -54,11 +54,11 @@ class WhisperSegment:
         return self.segments[-1].end
 
     def __str__(self):
-        return " ".join([str(s) for s in self.segments])
+        return "".join([str(s) for s in self.segments])
 
     def str_shifted(self):
         d = self.segments[0].start
-        return " ".join([s.str_shifted(d) for s in self.segments])
+        return "".join([s.str_shifted(d) for s in self.segments])
 
     def add_segment(self, segment: AudioSegment) -> bool:
         if self.segments and segment.end - self.segment_start > self.limit:

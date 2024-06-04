@@ -90,4 +90,4 @@ class TestWhisperSegment:
 
         shifted_str = ws.str_shifted()
 
-        assert shifted_str == "<|0.00|>test<|3.12|> <|6.10|>test 2<|8.14|>"
+        assert shifted_str == "<|0.00|>test<|3.12|><|6.10|>test 2<|8.14|>"
